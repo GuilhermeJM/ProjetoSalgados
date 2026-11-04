@@ -45,7 +45,7 @@ class IngredientServiceIntegrationTest {
         assertEquals(0, new BigDecimal("5000").compareTo(r.minimumStock()));
         assertEquals(0, BigDecimal.ZERO.compareTo(r.currentStock()));
         assertTrue(r.active());
-        assertFalse(r.belowMinimum());
+        assertTrue(r.belowMinimum());
     }
 
     @Test

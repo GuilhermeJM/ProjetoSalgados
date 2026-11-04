@@ -19,7 +19,7 @@ public record IngredientRequest(
         @NotNull(message = "Informe a unidade-base (G, ML ou UN).")
         Unit baseUnit,
 
-        boolean allowFraction,
+        Boolean allowFraction,
 
         @NotNull(message = "Informe o estoque mínimo (use 0 se não houver).")
         @PositiveOrZero(message = "O estoque mínimo não pode ser negativo.")

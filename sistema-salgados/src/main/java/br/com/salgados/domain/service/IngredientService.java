@@ -48,7 +48,7 @@ public class IngredientService {
         BigDecimal minimumBase = minimumStockInBase(request);
 
         Ingredient toSave = new Ingredient(null, name, normalize(request.category()),
-                request.baseUnit(), request.allowFraction(), minimumBase,
+                request.baseUnit(), allowFraction(request), minimumBase,
                 BigDecimal.ZERO, BigDecimal.ZERO, true, LocalDateTime.now());
 
         long id = repository.insert(toSave);
@@ -70,7 +70,7 @@ public class IngredientService {
 
         BigDecimal minimumBase = minimumStockInBase(request);
         repository.update(new Ingredient(id, name, normalize(request.category()),
-                request.baseUnit(), request.allowFraction(), minimumBase,
+                request.baseUnit(), allowFraction(request), minimumBase,
                 current.currentStock(), current.currentAverageCost(), current.active(),
                 current.createdAt()));
         return findById(id);
@@ -109,12 +109,16 @@ public class IngredientService {
                 ? request.minimumStockUnit() : request.baseUnit();
         BigDecimal base = conversion.toBase(request.minimumStock(), inputUnit, request.baseUnit());
         if (base.signum() > 0) {
-            conversion.validateQuantity(base, request.baseUnit(), request.allowFraction());
+            conversion.validateQuantity(base, request.baseUnit(), allowFraction(request));
         }
         return base;
     }
 
     private static String normalize(String text) {
         return text == null || text.isBlank() ? null : text.trim();
+    }
+
+    private static boolean allowFraction(IngredientRequest request) {
+        return Boolean.TRUE.equals(request.allowFraction());
     }
 }
