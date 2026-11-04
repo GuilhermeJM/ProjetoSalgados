@@ -120,3 +120,7 @@ CREATE INDEX IF NOT EXISTS idx_stock_mov_ingredient  ON stock_movement (ingredie
 CREATE INDEX IF NOT EXISTS idx_stock_mov_source      ON stock_movement (source_type, source_id);
 
 INSERT OR IGNORE INTO app_setting (key, value) VALUES ('target_margin_percent', '30');
+
+-- No máximo uma versão ACTIVE por produto
+CREATE UNIQUE INDEX IF NOT EXISTS idx_recipe_one_active
+    ON recipe (product_id) WHERE status = 'ACTIVE';
