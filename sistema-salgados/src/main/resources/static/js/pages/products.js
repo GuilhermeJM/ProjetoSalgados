@@ -5,14 +5,18 @@ import {
 } from '../ui.js';
 import { formatNumber } from '../format.js';
 
-export async function render(container) {
+export async function render(container, params = {}) {
+  if (params.id && params.sub === 'receita') {
+    const recipePage = await import('./recipe.js');
+    return recipePage.render(container, params);
+  }
   const state = { items: [], search: '', active: 'true', sortKey: 'name', sortDir: 'asc' };
 
   container.innerHTML = `
     <header class="page-header">
       <div>
         <h1>Produtos e receitas</h1>
-        <p class="subtitle">Cadastro dos salgados produzidos. As receitas entram na próxima etapa.</p>
+        <p class="subtitle">Cadastro dos salgados e de suas receitas.</p>
       </div>
       <button type="button" class="btn btn-primary" id="btn-new">+ Novo produto</button>
     </header>
@@ -59,6 +63,7 @@ export async function render(container) {
           ? '<span class="badge badge-ok">Ativo</span>'
           : '<span class="badge badge-off">Inativo</span>'}</td>
         <td class="actions">
+          <a class="btn btn-sm" href="#/produtos/${p.id}/receita">Receita</a>
           <button type="button" class="btn btn-sm" data-action="edit" data-id="${p.id}">Editar</button>
           <button type="button" class="btn btn-sm" data-action="toggle" data-id="${p.id}">${p.active ? 'Inativar' : 'Reativar'}</button>
         </td>

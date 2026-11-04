@@ -86,9 +86,9 @@ function showErrors(form, body) {
  * Abre um formulário em diálogo. `onSubmit(form)` deve lançar ApiError em caso de erro;
  * se terminar sem erro, o diálogo fecha.
  */
-export function openFormDialog({ title, bodyHtml, submitLabel = 'Salvar', onReady, onSubmit }) {
+export function openFormDialog({ title, bodyHtml, submitLabel = 'Salvar', wide = false, onReady, onSubmit }) {
   const dialog = document.createElement('dialog');
-  dialog.className = 'modal';
+  dialog.className = wide ? 'modal modal-wide' : 'modal';
   dialog.innerHTML = `
     <form novalidate>
       <header class="modal-header"><h2>${esc(title)}</h2></header>

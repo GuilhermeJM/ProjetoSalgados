@@ -19,10 +19,13 @@ let navigationId = 0;
 nav.innerHTML = NAV.map((item) =>
   `<a href="#${item.path}" data-path="${item.path}">${esc(item.label)}</a>`).join('');
 
+
 async function navigate() {
   const current = ++navigationId; // evita que uma tela lenta sobrescreva a mais recente
-  const path = location.hash.slice(1) || '/painel';
-  const item = NAV.find((n) => n.path === path) ?? NAV[0];
+  // "#/produtos/12/receita" -> section "produtos", params { id: "12", sub: "receita" }
+  const [, section = 'painel', ...rest] = (location.hash.slice(1) || '/painel').split('/');
+  const params = { id: rest[0], sub: rest[1] };
+  const item = NAV.find((n) => n.path === `/${section}`) ?? NAV[0];
 
   nav.querySelectorAll('a').forEach((a) =>
     a.classList.toggle('active', a.dataset.path === item.path));
@@ -38,7 +41,7 @@ async function navigate() {
   try {
     const page = await item.module();
     if (current !== navigationId) return;
-    await page.render(main);
+    await page.render(main, params);
   } catch (err) {
     console.error(err);
     main.innerHTML = '<div class="card"><p class="state state-error">Não foi possível carregar esta tela.</p></div>';

@@ -46,3 +46,8 @@ export function formatCostPerUnit(costPerBase, baseUnit) {
   const label = baseUnit === 'G' ? 'kg' : baseUnit === 'ML' ? 'L' : 'un';
   return `${formatCurrency(costPerBase * factor, 2, 4)}/${label}`;
 }
+
+export function formatDateTime(iso) {
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+    .format(new Date(iso));
+}
