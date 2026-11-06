@@ -120,4 +120,11 @@ public class IngredientRepository {
     public void setActive(long id, boolean active) {
         jdbc.update("UPDATE ingredient SET active = ? WHERE id = ?", active ? 1 : 0, id);
     }
+
+        /** Atualiza o saldo e o custo médio. Chamado só pelos serviços de compra, produção e ajuste. */
+    public void updateStockAndCost(long id, java.math.BigDecimal stock, java.math.BigDecimal averageCost) {
+        jdbc.update("UPDATE ingredient SET current_stock = ?, current_average_cost = ? WHERE id = ?",
+                Decimals.toDb(stock), Decimals.toDb(averageCost), id);
+    }
+
 }
