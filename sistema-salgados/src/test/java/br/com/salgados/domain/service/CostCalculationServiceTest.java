@@ -65,4 +65,11 @@ class CostCalculationServiceTest {
     void rejeitaQuantidadeZero() {
         assertThrows(IllegalArgumentException.class, () -> service.unitCost(bd("10"), bd("0")));
     }
+
+    @Test
+    void valorDoEstoqueArredondaParaCentavos() {
+        assertValor("50", service.stockValue(bd("10000"), bd("0.005")));
+        assertValor("80", service.stockValue(bd("15000"), bd("0.0053333333")));   // 79,9999995
+        assertValor("0.01", service.stockValue(bd("3"), bd("0.0033333333")));     // 0,0099999999
+    }
 }

@@ -36,15 +36,17 @@ public class PurchaseService {
     private final StockMovementRepository movements;
     private final UnitConversionService conversion;
     private final CostCalculationService costs;
+    private final StockRecalculationService recalculation;
 
     public PurchaseService(PurchaseRepository purchases, IngredientRepository ingredients,
                            StockMovementRepository movements, UnitConversionService conversion,
-                           CostCalculationService costs) {
+                           CostCalculationService costs, StockRecalculationService recalculation) {
         this.purchases = purchases;
         this.ingredients = ingredients;
         this.movements = movements;
         this.conversion = conversion;
         this.costs = costs;
+        this.recalculation = recalculation;
     }
 
     public List<PurchaseResponse> list(LocalDate from, LocalDate to, Long ingredientId) {
@@ -81,7 +83,7 @@ public class PurchaseService {
             lines.add(new Line(ingredient.id(), quantityBase, item.totalCost()));
         }
 
-        // 2) gravar compra, itens, movimentos e saldos (tudo na mesma transação)
+        // 2) gravar compra, itens e movimentos
         BigDecimal total = lines.stream().map(Line::totalCost).reduce(BigDecimal.ZERO, BigDecimal::add);
         LocalDateTime now = LocalDateTime.now();
         long purchaseId = purchases.insert(new Purchase(null, request.purchaseDate(),
@@ -89,19 +91,14 @@ public class PurchaseService {
         LocalDateTime occurredAt = request.purchaseDate().atStartOfDay();
 
         for (Line line : lines) {
-            // Relê o ingrediente: se ele aparece em duas linhas, a segunda enxerga o saldo já atualizado.
-            Ingredient current = ingredients.findById(line.ingredientId()).orElseThrow();
-
-            BigDecimal newStock = current.currentStock().add(line.quantityBase());
-            BigDecimal newAverage = costs.newAverageCost(current.currentStock(), current.currentAverageCost(),
-                    line.quantityBase(), line.totalCost());
-
             purchases.insertItem(purchaseId, line.ingredientId(), line.quantityBase(), line.totalCost(),
                     costs.unitCost(line.totalCost(), line.quantityBase()));
             movements.insert(new StockMovement(null, line.ingredientId(), MovementType.PURCHASE,
                     line.quantityBase(), SourceType.PURCHASE, purchaseId, occurredAt, null, now));
-            ingredients.updateStockAndCost(line.ingredientId(), newStock, newAverage);
         }
+
+        // 3) saldo e custo médio: sempre recalculados a partir do extrato, uma vez por ingrediente
+        lines.stream().map(Line::ingredientId).distinct().forEach(recalculation::apply);
 
         return findById(purchaseId);
     }

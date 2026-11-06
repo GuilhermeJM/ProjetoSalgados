@@ -36,4 +36,9 @@ public class CostCalculationService {
         BigDecimal totalQuantity = previousStock.add(purchasedQuantity);
         return totalValue.divide(totalQuantity, COST_SCALE, COST_ROUNDING);
     }
+
+    /** Valor do estoque em reais (quantidade x custo médio), arredondado para centavos. */
+    public BigDecimal stockValue(BigDecimal quantityBase, BigDecimal unitCost) {
+        return quantityBase.multiply(unitCost).setScale(2, RoundingMode.HALF_UP);
+    }
 }

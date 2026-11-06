@@ -17,6 +17,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import br.com.salgados.domain.enums.Unit;
+import br.com.salgados.domain.model.PurchaseLineCost;
 import br.com.salgados.domain.model.Purchase;
 import br.com.salgados.domain.model.PurchaseItem;
 import br.com.salgados.util.Decimals;
@@ -111,5 +112,20 @@ public class PurchaseRepository {
                 """,
                 purchaseId, ingredientId, Decimals.toDb(quantityBase),
                 Decimals.toDb(totalCost), Decimals.toDb(unitCostBase));
+    }
+    
+        /** Custo de cada linha de compra de um ingrediente, na ordem de gravação. Usado no recálculo. */
+    public List<PurchaseLineCost> findLineCosts(long ingredientId) {
+        return jdbc.query("""
+                SELECT purchase_id, quantity_base, total_cost
+                  FROM purchase_item
+                 WHERE ingredient_id = ?
+                 ORDER BY id
+                """,
+                (rs, rowNum) -> new PurchaseLineCost(
+                        rs.getLong("purchase_id"),
+                        Decimals.fromDb(rs.getString("quantity_base")),
+                        Decimals.fromDb(rs.getString("total_cost"))),
+                ingredientId);
     }
 }
